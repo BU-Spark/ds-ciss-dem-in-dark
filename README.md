@@ -3,11 +3,11 @@
   <br>
   <a href="https://www.bu.edu/spark/" target="_blank"><img src="https://www.bu.edu/spark/files/2023/08/logo.png" alt="BUSpark" width="200"></a>
   <br>
-  Project README Template <change to project name>
+  Democracy in the Dark
   <br>
 </h1>
 
-<h4 align="center">A template for the project readme file. </h4> <change to repo short description>
+<h4 align="center">Mapping electricity access and political distribution across Ghana's constituencies.</h4>
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
@@ -17,20 +17,21 @@
 </p>
 
 ## Key Features
-In this section you will be including a list of key features of your code/project.
 
-You should also include a short description of what each part of your code does. (Detailed description in the readme of each directory, if applicable)
-* /path/to/directory - function and description
-  - Key notes
-* /path/to/script - function and description
-  - Key notes
-* Lorem Ipsum - Dolor Sit Amet
-  - Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-* Duis Aute Irure Dolor
-  - Excepteur sint occaecat
-* Excepteur Sint Occaecat
-  - Curabitur efficitur, nunc non ultricies gravida, felis purus posuere eros, sed faucibus sapien est nec quam. Nulla at nisl nisl.
- 
+This repo builds a pipeline that links nighttime light data to Ghana's constituencies and election results.
+
+* `scripts/nightlights/`: pulls VIIRS nighttime light data, builds the analytic panel, checks data quality, and draws the main maps.
+  - Includes a `GEE/` subfolder with the Earth Engine scripts that pull the raw data.
+* `scripts/seasonal_pattern/`: groups constituencies into climate zones and measures their seasonal light patterns.
+* `scripts/election_impact/`: tests whether competitive elections line up with nightlight changes around each vote.
+
+See `scripts/SCRIPTS_GUIDE.md` for the run order and the inputs and outputs of each script.
+
+Results land in:
+* `result/nightlights/`: panel outputs and maps from the nightlights scripts.
+* `result/seasonal_zones/`: seasonal decomposition outputs by climate zone.
+* `result/election_impact/`: election versus nightlights comparison outputs.
+
 ## How To Use
 
 To clone and run this application, you'll need <a href="https://git-scm.com" target="_blank">Git</a>
@@ -38,7 +39,7 @@ From your command line:
 
 ```bash
 # Clone this repository
-$ git clone [repo link]
+$ git clone https://github.com/BU-Spark/ds-ciss-dem-in-dark.git
 
 # Further Instructions
 ...
@@ -60,19 +61,10 @@ At the end of the semester during project wrap up open a final Pull Request to m
  
 ## Project Description
 
-In this section, you should include the project description, either from the client or spark.
-
-Please make sure it reflects what you see on the documents (project description) you recieved.
-
-* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Donec vel nunc at libero ultrices tincidunt. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Mauris ut ligula nec risus posuere ultricies at et ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-* Veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+* This project studies whether electricity access across Ghana's constituencies tracks political outcomes.
+* It looks at incumbency, electoral competitiveness, and changes in access around election periods.
+* It also accounts for seasonal swings in access driven by the dry season, roughly November through March.
 
 ## Data locations
 
-In this section, you should include the location of all of your datasets for the project (if applicable)
-
-<a href="dataset-documentation">Dataset Documentation</a>
-* Location 1: [location]
-  - [description]
-* Location 2: [location]
-  - [description]
+See <a href="dataset-documentation/DATASETDOC.md">dataset-documentation/DATASETDOC.md</a> for full details on every dataset used in this project.
