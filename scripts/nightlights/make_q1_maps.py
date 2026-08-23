@@ -18,7 +18,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DATA = ROOT / "data" / "nightlights"        # panel + with_geo outputs
 BOUND = ROOT / "data" / "boundaries"        # constituency polygons
-IMG = ROOT / "images" / "nightlights"       # figure outputs
+IMG = ROOT / "result" / "nightlights"       # figure outputs
 IMG.mkdir(parents=True, exist_ok=True)
 GPKG = BOUND / "constituencies_4326.gpkg"
 PANEL = DATA / "constituency_lights_panel.csv"
@@ -68,7 +68,25 @@ miss_reg = g["region_16"].isna()
 g.loc[miss_reg, "region_16"] = g.loc[miss_reg, "Cons_name"].map(name2reg)
 region_gdf = g.dropna(subset=["region_16"]).dissolve(by="region_16")
 assert len(g) == 275, f"row count exploded to {len(g)} — check id merge"
-print(f"regions dissolved: {len(region_gdf)}")
+print(f"regions dissolved (16-region): {len(region_gdf)}")
+
+# --- 10-region overlay: Ghana used 10 regions through 2018, split into 16 at
+# end of 2018. Panels for years <= REGION_SPLIT_YEAR use the 10-region layer.
+REGION_SPLIT_YEAR = 2018
+# normalize spelling: the dictionary has both "Brong Ahafo" and "Brong-Ahafo"
+# for the same region; without normalizing, dissolve yields 11 polygons, not 10.
+d16["region_10"] = d16["region_10"].replace("Brong Ahafo", "Brong-Ahafo")
+d10_id = d16.dropna(subset=["constituency_id"]).drop_duplicates("constituency_id")
+g = g.merge(d10_id[["constituency_id", "region_10"]], on="constituency_id", how="left")
+name2reg10 = d16.dropna(subset=["region_10"]).set_index("constituency_name")["region_10"]
+name2reg10 = name2reg10[~name2reg10.index.duplicated()]
+miss_reg10 = g["region_10"].isna()
+g.loc[miss_reg10, "region_10"] = g.loc[miss_reg10, "Cons_name"].map(name2reg10)
+print(f"polygons with no region_10: {g['region_10'].isna().sum()}")
+assert len(g) == 275, f"row count exploded to {len(g)} — check id merge"
+region_gdf_10 = g.dropna(subset=["region_10"]).dissolve(by="region_10")
+assert len(region_gdf_10) == 10, f"expected 10 regions, got {len(region_gdf_10)}"
+print(f"regions dissolved (10-region): {len(region_gdf_10)}")
 
 
 def add_regions(ax):
@@ -87,8 +105,13 @@ fig, axes = plt.subplots(1, len(YEARS), figsize=(4.2 * len(YEARS), 8))
 for ax_i, y in zip(axes, YEARS):
     g.plot(column=f"log_mean_{y}", cmap="inferno", vmin=0, vmax=vmax, ax=ax_i,
            missing_kwds={"color": "lightgrey"})
-    region_gdf.boundary.plot(ax=ax_i, edgecolor="red", linewidth=0.5)
-    ax_i.set_title(str(y), fontsize=12); ax_i.axis("off")
+    if y <= REGION_SPLIT_YEAR:
+        region_gdf_10.boundary.plot(ax=ax_i, edgecolor="red", linewidth=0.5)
+        basis = "10 regions"
+    else:
+        region_gdf.boundary.plot(ax=ax_i, edgecolor="red", linewidth=0.5)
+        basis = "16 regions"
+    ax_i.set_title(f"{y} ({basis})", fontsize=12); ax_i.axis("off")
 sm = plt.cm.ScalarMappable(cmap="inferno", norm=plt.Normalize(vmin=0, vmax=vmax))
 fig.colorbar(sm, ax=axes, shrink=0.5, label="log brightness")
 fig.suptitle("Ghana constituency brightness (log radiance) by year — shared scale",
